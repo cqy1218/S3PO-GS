@@ -1,4 +1,6 @@
+本项目仅做代码阅读功能，原项目可参阅本项目fork的源代码地址。本项目内容化繁为简，仅保留和分析核心代码。
 
+原项目地址：https://github.com/3DAgentWorld/S3PO-GS
 
 <p align="center">
   <h1 align="center"> Outdoor Monocular SLAM with Global Scale-Consistent 3D Gaussian Pointmaps
@@ -121,28 +123,13 @@ CUDA_VISIBLE_DEVICES=0 python slam.py --config "configs/mono/dl3dv/2.yaml"
 
 - Ground truth depth input interface is still retained in the code, although we didn't use it for SLAM.
 
-# Acknowledgement
+## KITTI Sequence List (used in this work)
 
-- This work is built on [3DGS](https://github.com/graphdeco-inria/gaussian-splatting),  [MonoGS](https://github.com/muskie82/MonoGS),  and [MASt3R](https://github.com/naver/mast3r), thanks for these great works.
-
-- For more details about Demo, please refer to [MonoGS](https://github.com/muskie82/MonoGS), as we are using its visualization code.
-
-# Citation
-
-If you found our code/work to be useful in your own research, please considering citing the following:
-
-```bibtex
-@article{cheng2025outdoor,
-  title={Outdoor Monocular SLAM with Global Scale-Consistent 3D Gaussian Pointmaps},
-  author={Cheng, Chong and Yu, Sicheng and Wang, Zijian and Zhou, Yifan and Wang, Hao},
-  journal={arXiv preprint arXiv:2507.03737},
-  year={2025}
-}
-
-@article{yu2025rgb,
-  title={Rgb-only gaussian splatting slam for unbounded outdoor scenes},
-  author={Yu, Sicheng and Cheng, Chong and Zhou, Yifan and Yang, Xiaojun and Wang, Hao},
-  journal={arXiv preprint arXiv:2502.15633},
-  year={2025}
-}
-```
+00: 480 - 680
+02: 1490 - 1690
+03: 280 - 480
+05: 0 - 200
+06: 160 - 360
+07: 0 - 200
+08: 2128 - 2328
+10: 89 - 289
