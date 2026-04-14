@@ -26,7 +26,10 @@ from utils.slam_frontend import FrontEnd
 
 from mast3r.model import AsymmetricMASt3R
 
-
+# 这段代码定义了一个SLAM类，用于实现同时定位与地图构建的功能。
+# SLAM类的初始化方法接受配置参数、MASt3R模型和保存目录，并设置了前端和后端的处理流程。
+# 前端负责处理输入数据和相机位姿估计，后端负责优化高斯模型和地图构建。代码还包括了评估渲染结果和保存最终高斯模型的功能。
+# 最后，通过命令行参数解析来配置SLAM系统，并使用wandb进行结果记录和可视化。
 class SLAM:
     def __init__(self, config, mast3r_model, save_dir=None):
         start = torch.cuda.Event(enable_timing=True)
@@ -45,6 +48,8 @@ class SLAM:
             pipeline_params,
         )
 
+        # 说明：根据配置文件中的数据集类型和传感器类型，设置SLAM系统的运行模式（实时模式或单目模式）。
+        # 同时，根据配置决定是否使用球谐函数、是否启用GUI界面、是否进行评估渲染、颜色优化和全局BA等功能。
         self.live_mode = self.config["Dataset"]["type"] == "realsense"
         self.monocular = self.config["Dataset"]["sensor_type"] == "monocular"
         self.use_spherical_harmonics = self.config["Training"]["spherical_harmonics"]
@@ -67,6 +72,7 @@ class SLAM:
         bg_color = [0, 0, 0]                                               
         self.background = torch.tensor(bg_color, dtype=torch.float32, device="cuda")
 
+        # 说明：初始化前端和后端的通信队列，以及GUI界面所需的队列。前端和后端通过这些队列进行数据交换和同步。
         frontend_queue = mp.Queue()                                         
         backend_queue = mp.Queue()
 
@@ -76,6 +82,7 @@ class SLAM:
         self.config["Results"]["save_dir"] = save_dir
         self.config["Training"]["monocular"] = self.monocular
 
+        # 说明：根据配置文件中的参数，设置前端和后端的超参数，并将相关数据传递给前端和后端进行处理。
         # Initialize frontend and backend queues
         self.frontend = FrontEnd(self.config, mast3r_model, self.save_dir)
         self.backend = BackEnd(self.config, self.save_dir)
@@ -99,6 +106,7 @@ class SLAM:
 
         self.backend.set_hyperparams()
 
+        # 说明：如果启用GUI界面，初始化参数GUI并将相关数据传递给GUI进行显示和交互。
         self.params_gui = gui_utils.ParamsGUI(
             pipe=self.pipeline_params,
             background=self.background,
@@ -117,6 +125,8 @@ class SLAM:
         self.frontend.run()
         backend_queue.put(["pause"])    
 
+        # 说明：前端完成处理后，记录时间并计算总的处理时间和帧率。
+        # 然后根据配置文件中的参数，进行评估渲染和颜色优化，并将结果记录到wandb中。
         end.record()
         torch.cuda.synchronize()
         # empty the frontend queue
@@ -125,6 +135,8 @@ class SLAM:
         Log("Total time", start.elapsed_time(end) * 0.001, tag="Eval")
         Log("Total FPS", N_frames / (start.elapsed_time(end) * 0.001), tag="Eval")
 
+        # 说明：如果启用评估渲染功能，获取前端的高斯模型和关键帧索引，
+        # 并计算ATE（绝对轨迹误差）和渲染结果的评估指标（PSNR、SSIM、LPIPS等）。
         if self.eval_rendering:                         # Evaluation and rendering
             self.gaussians = self.frontend.gaussians
             kf_indices = self.frontend.kf_indices       # Get keyframe list indices from frontend for evaluation and rendering
@@ -159,7 +171,8 @@ class SLAM:
                 FPS,
             )
             
-            
+            # 说明：如果启用颜色优化功能，前端和后端通过队列进行通信，获取优化后的高斯模型，
+            # 并进行评估渲染，记录评估指标到wandb中，并保存最终的高斯模型。
             if self.color_refinement:
                 # re-used the frontend queue to retrive the gaussians from the backend.
                 while not frontend_queue.empty():       
@@ -228,6 +241,7 @@ if __name__ == "__main__":
     
 
     args = parser.parse_args(sys.argv[1:])
+
 
     mp.set_start_method("spawn")          
 
